@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["auth", "store"]
+}
+
+// para el usuarios que tomara los roles de Admin para la creacion de productos y USER para los clientes
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+  role     Role   @default(USER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ProductCreated ProductCreated[]
+  Order          Order[]
+
+  @@schema("auth")
+}
+
+enum Role {
+  ADMIN
+  USER
+
+  @@schema("auth")
+}
+
+// para los productos y el carros de compras del usuario
+
+model Product {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  quantity    Int     @default(0)
+  imageUrl    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ProductCreated ProductCreated[]
+  OrderList      OrderList[]
+
+  @@schema("store")
+}
+
+model ProductCreated {
+  id        Int @id @default(autoincrement())
+  productId Int
+  userId    Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Product Product @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  User    User    @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@schema("store")
+}
+
+model Order {
+  id       Int   @id @default(autoincrement())
+  userId   Int
+  subtotal Float
+  tax      Float
+  total    Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User      User        @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  OrderList OrderList[]
+
+  @@schema("store")
+}
+
+model OrderList {
+  id        Int   @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int   @default(1)
+  price     Float
+
+  Order   Order   @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  Product Product @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("store")
+}

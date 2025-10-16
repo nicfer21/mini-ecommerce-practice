@@ -8,11 +8,14 @@ import {
   Delete,
   UseInterceptors,
   UploadedFile,
+  Res,
+  Query,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import type { QueryParams } from 'src/types';
 
 @Controller('product')
 export class ProductController {
@@ -28,8 +31,8 @@ export class ProductController {
   }
 
   @Get()
-  findAll() {
-    return this.productService.findAll();
+  async findAll(@Query() query: QueryParams) {
+    return await this.productService.findAll(query);
   }
 
   @Get(':id')
@@ -37,9 +40,19 @@ export class ProductController {
     return this.productService.findOne(+id);
   }
 
+  @Get('image/:name')
+  findImage(@Param('name') name: string, @Res() res: Response) {
+    return this.productService.findImage(name, res);
+  }
+
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
+  @UseInterceptors(FileInterceptor('file'))
+  update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.productService.update(+id, updateProductDto, file);
   }
 
   @Delete(':id')

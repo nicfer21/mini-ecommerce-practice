@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { max, min } from 'class-validator';
-import path, { join } from 'path';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import sharp from 'sharp';
+import * as fs from 'fs';
 
 @Injectable()
 export class UploadService {
@@ -38,6 +39,34 @@ export class UploadService {
       return { fileName: newName, path: outPutPath };
     } catch (error) {
       return { fileName: null, path: null };
+    }
+  }
+
+  findImage(fileName: string) {
+    const ruta = join(__dirname, `../../src/upload/images`, fileName);
+
+    try {
+      if (!existsSync(ruta)) {
+        return { state: false, path: null };
+      } else {
+        return { state: true, path: ruta };
+      }
+    } catch (error) {
+      return { state: false, path: null };
+    }
+  }
+
+  deleteImage(fileName: string) {
+    const ruta = join(__dirname, `../../src/upload/images`, fileName);
+    try {
+      if (existsSync(ruta)) {
+        fs.unlinkSync(ruta); // Eliminar el archivo
+        return { state: true, error: null };
+      } else {
+        return { state: false, error: 'No existe la imagen' };
+      }
+    } catch (error) {
+      return { state: false, error: error };
     }
   }
 }

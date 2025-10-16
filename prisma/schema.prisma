@@ -60,7 +60,7 @@ model ProductCreated {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Product Product @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  Product Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   User    User    @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@schema("store")
